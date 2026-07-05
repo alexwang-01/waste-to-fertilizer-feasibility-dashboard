@@ -1,10 +1,8 @@
-﻿# Waste-to-Fertilizer Feasibility Dashboard
+# Waste-to-Fertilizer Feasibility Dashboard
 
 [Live Streamlit App](https://waste-to-fertilizer-feasibility-dashboard.streamlit.app/)
 
-This project rebuilds the source Waste-to-Fertilizer business model as a transparent, assumption-based decision support dashboard.
-
-The current stage is **not** a machine learning project. The commercial model is still early-stage, so there is not enough historical operational, sales, customer, and deal outcome data to support reliable predictive modeling. The first goal is to rebuild the core financial and operational logic in a way that is auditable, reusable, and suitable for a future Streamlit dashboard.
+This project rebuilds the source Waste-to-Fertilizer business model as a transparent, assumption-based decision support dashboard. It turns operational and commercial assumptions into an interactive app for deal discussion, financial evaluation, and scenario testing.
 
 ## Project Objective
 
@@ -28,18 +26,6 @@ The current rebuild focuses on a clean **unit economics, deal structure, and sta
 5. Split the same business case into Provider and Customer financial views.
 6. Package the calculation engine into an interactive Streamlit dashboard.
 
-## Why Not ML Yet?
-
-A reliable ML model would require historical data such as:
-
-- Actual customer leads and conversion outcomes
-- Actual daily waste volume by customer
-- Machine utilization, downtime, and maintenance records
-- Fertilizer output and sale records
-- Actual electricity, labor, enzyme, logistics, and repair costs
-- Historical proposal terms and deal success or failure
-
-Until those data exist, the right approach is **decision analytics**: transparent assumptions, sensitivity analysis, break-even logic, and scenario simulation.
 
 ## Repository Structure
 
