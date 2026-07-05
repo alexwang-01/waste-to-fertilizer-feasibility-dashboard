@@ -1,0 +1,7 @@
+﻿labor_type,role,headcount,monthly_salary_usd,monthly_total_usd,source_note
+Indirect,General Manager,1,3000,3000,"Extracted from source workbook, Personnel sheet"
+Indirect,Sales Executive,1,3000,3000,"Extracted from source workbook, Personnel sheet"
+Indirect,Marketing Executive,1,1000,1000,"Extracted from source workbook, Personnel sheet"
+Indirect,Accounting,1,500,500,"Extracted from source workbook, Personnel sheet"
+Direct,Factory Manager,1,800,800,"Extracted from source workbook, Personnel sheet"
+Direct,Operators,4,500,2000,"Extracted from source workbook, Personnel sheet"

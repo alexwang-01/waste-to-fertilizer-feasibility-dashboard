@@ -1,0 +1,13 @@
+﻿model,capacity_kg,capacity_ton,power_kw,heater_kw,total_load_kw,operation_hours_per_day,asia_price_no_ce_usd,asia_price_with_ce_usd,europe_price_with_ce_usd,monthly_rental_ratio,source_note
+200 L,100,0.10,2.2,6,8.2,24,214500,234500,328000,0.0065,"Extracted from source workbook, Machine & Utilization sheet"
+500 L,250,0.25,8.5,10,18.5,24,275000,301000,378000,0.0065,"Extracted from source workbook, Machine & Utilization sheet"
+1200 L,600,0.60,11,15,26,24,385000,413000,478000,0.0065,"Extracted from source workbook, Machine & Utilization sheet"
+4000 L,2000,2.00,18.5,60,78.5,24,572000,612000,708000,0.0065,"Extracted from source workbook, Machine & Utilization sheet"
+8000 L,4000,4.00,37,120,157,24,990000,1050000,1488000,0.0065,"Extracted from source workbook, Machine & Utilization sheet"
+16000 L,8000,8.00,55,180,235,24,1540000,1680000,2208000,0.0065,"Extracted from source workbook, Machine & Utilization sheet"
+24000 L,12000,12.00,75,200,275,24,2035000,2175000,2798000,0.0065,"Extracted from source workbook, Machine & Utilization sheet"
+40000 L,20000,20.00,132,0,132,24,4675000,5015000,5558000,0.0065,"Boiler heater shown separately in source; total_load_kw follows source formula using power_kw only"
+80000 L,40000,40.00,175,0,175,24,9350000,10030000,11118000,0.0065,"Boiler heater shown separately in source; total_load_kw follows source formula using power_kw only"
+120000 L,60000,60.00,264,0,264,24,13950000,15125000,,0.0065,"Boiler heater shown separately in source; Europe price not available in extracted source"
+160000 L,80000,80.00,350,0,350,24,18700000,20100000,,0.0065,"Boiler heater shown separately in source; Europe price not available in extracted source"
+200000 L,100000,100.00,380,0,380,24,23375000,25550000,,0.0065,"Boiler heater shown separately in source; Europe price not available in extracted source"

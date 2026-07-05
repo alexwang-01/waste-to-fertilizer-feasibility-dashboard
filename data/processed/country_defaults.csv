@@ -1,0 +1,6 @@
+country,electricity_rate_usd_per_kwh,disposal_fee_low_usd_per_ton,disposal_fee_high_usd_per_ton,organic_waste_share,assumption_quality,source_note
+Default Market,0.2033,67,93,0.1051,medium,"Electricity rate from ELECTRICITY.xlsx; disposal fee range from final report; organic waste share from country_level_data.csv"
+Saudi Arabia,,32,72,0.4550,medium,"Disposal fee range and organic waste share from final report/country_level_data.csv; electricity rate needs researched source"
+China,,,,0.6120,low,"Organic waste share from country_level_data.csv; commercial pricing and electricity assumptions need source validation"
+Indonesia,,,,0.5380,low,"Organic waste share from country_level_data.csv; commercial pricing and electricity assumptions need source validation"
+Cambodia,,,,0.6660,low,"Organic waste share from country_level_data.csv; commercial pricing and electricity assumptions need source validation"

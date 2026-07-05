@@ -1,0 +1,7 @@
+waste_type,base_conversion_rate,conservative_conversion_rate,optimistic_conversion_rate,assumption_quality,source_note
+poultry_manure,0.70,0.55,0.75,medium,"Original project used 70% for chicken/cow dung scenario; validate with actual processing records"
+cow_dung,0.70,0.55,0.75,medium,"Original project used 70% for chicken/cow dung scenario; validate with actual processing records"
+food_waste,0.70,0.45,0.75,low,"Sales deck notes food waste yielded approximately 70% final output in a Koufu pilot; source context should be verified"
+fish_waste,0.30,0.20,0.40,medium,"Final report and sales deck referenced fish-based input yielding approximately 30% final output"
+horticultural_waste,0.50,0.35,0.65,low,"Placeholder assumption for scenario testing; requires validation"
+mixed_organic,0.50,0.30,0.65,low,"Placeholder assumption for mixed waste; requires customer-specific validation"
