@@ -21,7 +21,7 @@ from src.view_model import ViewAssumptions
 
 ROOT = Path(__file__).resolve().parent
 DEFAULT_CUSTOMER_CASE = "base"
-DATA_CACHE_VERSION = "tabs-machine-personnel-v1"
+DATA_CACHE_VERSION = "provider-anonymized-v2"
 RECOVERY_CHART_HEIGHT = 456
 MONTHLY_VALUE_CHART_HEIGHT = 430
 CAPACITY_UTILIZATION_CHART_HEIGHT = 456
@@ -370,9 +370,16 @@ def _sidebar_inputs(
         st.header("Deal Inputs")
         deal_structure = st.selectbox("Deal Structure", list(DEAL_STRUCTURES), index=1)
         selected_structure = DEAL_STRUCTURES[deal_structure]
-        view_row = view_presets.loc[
+        view_matches = view_presets.loc[
             view_presets["scenario"].eq(selected_structure["view_preset"])
-        ].iloc[0]
+        ]
+        if view_matches.empty:
+            st.error(
+                "Deal setup data is out of sync. Please refresh the app; "
+                f"missing view preset: {selected_structure['view_preset']}"
+            )
+            st.stop()
+        view_row = view_matches.iloc[0]
 
         business_model = selected_structure["business_model"]
         base_inputs = inputs_from_scenario(scenario_row, business_model=business_model)
