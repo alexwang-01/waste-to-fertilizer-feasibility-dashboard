@@ -11,6 +11,7 @@ import streamlit as st
 from src.dashboard_service import (
     calculate_dashboard_result,
     load_dashboard_data,
+    normalize_dashboard_data,
     select_machine,
     view_assumptions_from_row,
 )
@@ -21,7 +22,7 @@ from src.view_model import ViewAssumptions
 
 ROOT = Path(__file__).resolve().parent
 DEFAULT_CUSTOMER_CASE = "base"
-DATA_CACHE_VERSION = "provider-anonymized-v2"
+DATA_CACHE_VERSION = "provider-anonymized-v3"
 RECOVERY_CHART_HEIGHT = 456
 MONTHLY_VALUE_CHART_HEIGHT = 430
 CAPACITY_UTILIZATION_CHART_HEIGHT = 456
@@ -286,7 +287,7 @@ div[data-testid="stVerticalBlockBorderWrapper"] {
 
 
 def main() -> None:
-    data = _load_data()
+    data = normalize_dashboard_data(_load_data())
     scenarios = data["scenarios"]
     machine_specs = _session_machine_master(data["machine_specs"])
     personnel_defaults = _session_personnel_master(data["personnel_defaults"])

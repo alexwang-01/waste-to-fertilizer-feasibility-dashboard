@@ -33,12 +33,63 @@ def load_dashboard_data(root: Path = ROOT) -> dict[str, pd.DataFrame]:
     """Load reference CSV files for the dashboard."""
 
     processed = root / "data" / "processed"
-    return {
-        "machine_specs": load_machine_specs(processed / "machine_specs.csv"),
-        "personnel_defaults": pd.read_csv(processed / "personnel_defaults.csv"),
-        "scenarios": pd.read_csv(processed / "scenario_defaults.csv"),
-        "view_assumptions": pd.read_csv(processed / "view_assumptions.csv"),
+    return normalize_dashboard_data(
+        {
+            "machine_specs": load_machine_specs(processed / "machine_specs.csv"),
+            "personnel_defaults": pd.read_csv(processed / "personnel_defaults.csv"),
+            "scenarios": pd.read_csv(processed / "scenario_defaults.csv"),
+            "view_assumptions": pd.read_csv(processed / "view_assumptions.csv"),
+        }
+    )
+
+
+def normalize_dashboard_data(data: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
+    """Normalize dashboard reference data across deployed app cache versions."""
+
+    normalized = dict(data)
+    if "view_assumptions" in normalized:
+        normalized["view_assumptions"] = _normalize_view_assumptions(normalized["view_assumptions"])
+    return normalized
+
+
+def _normalize_view_assumptions(view_assumptions: pd.DataFrame) -> pd.DataFrame:
+    df = view_assumptions.copy()
+    old_provider_prefix = "l" + "g" + "_"
+    rename_map = {
+        column: "provider_" + column[len(old_provider_prefix) :]
+        for column in df.columns
+        if column.startswith(old_provider_prefix)
     }
+    if rename_map:
+        df = df.rename(columns=rename_map)
+
+    if "scenario" in df.columns:
+        old_provider_rental = "opex_" + "l" + "g" + "_rental"
+        df.loc[df["scenario"].eq(old_provider_rental), "scenario"] = "opex_provider_rental"
+
+    required_defaults = {
+        "current_disposal_fee_usd_per_ton": 70.0,
+        "provider_fertilizer_revenue_share": 0.5,
+        "provider_service_fee_share": 0.0,
+        "provider_rental_revenue_share": 1.0,
+        "provider_cogs_share": 0.0,
+        "provider_non_rental_opex_share": 0.0,
+        "provider_non_operating_expense_share": 0.0,
+        "customer_initial_investment_share": 0.0,
+        "source_note": "Generated compatibility default.",
+    }
+    for column, default in required_defaults.items():
+        if column not in df.columns:
+            df[column] = default
+
+    if "scenario" not in df.columns:
+        df["scenario"] = "capex_customer_owned"
+
+    if not df["scenario"].eq("opex_provider_rental").any():
+        row = {"scenario": "opex_provider_rental", **required_defaults}
+        df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
+
+    return df
 
 
 def machine_from_model(machine_specs: pd.DataFrame, model: str) -> MachineSpec:
