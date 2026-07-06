@@ -15,6 +15,8 @@ from src.dashboard_service import (
     select_machine,
     view_assumptions_from_row,
 )
+from src.demand_forecasting import DemandForecastResult, forecast_daily_waste
+from src.demand_simulation import CUSTOMER_PROFILES, simulate_daily_waste
 from src.financial_model import FeasibilityInputs, MachineFleetItem, MachineSpec, machine_count
 from src.scenario_analysis import inputs_from_scenario
 from src.view_model import ViewAssumptions
@@ -314,7 +316,7 @@ def main() -> None:
     monthly_value_split = result["monthly_value_split"]
     investment_timeline = result["investment_recovery_timeline"]
 
-    dashboard_tab, machine_tab, personnel_tab = st.tabs(["Dashboard", "Machine", "Personnel"])
+    dashboard_tab, demand_tab, machine_tab, personnel_tab = st.tabs(["Dashboard", "Demand Forecast", "Machine", "Personnel"])
 
     with dashboard_tab:
         with st.container(border=True, key="deal_setup_section"):
@@ -357,6 +359,281 @@ def main() -> None:
         _render_personnel_tab(personnel_defaults)
 
 
+
+def _render_demand_forecast_tab() -> None:
+    with st.container(border=True, key="demand_forecast_section"):
+        st.subheader("Demand Forecast")
+        control_col, chart_col = st.columns([0.30, 0.70], gap="large")
+        with control_col:
+            st.markdown("**Synthetic History Setup**")
+            customer_type = st.selectbox(
+                "Customer type",
+                list(CUSTOMER_PROFILES),
+                index=0,
+                key="forecast_customer_type",
+            )
+            profile = CUSTOMER_PROFILES[customer_type]
+            baseline = st.number_input(
+                "Baseline waste, tons/day",
+                min_value=1.0,
+                max_value=250.0,
+                value=float(profile.baseline_tons_per_day),
+                step=1.0,
+                key=f"forecast_baseline_{customer_type}",
+            )
+            history_days = st.slider(
+                "History length, days",
+                min_value=180,
+                max_value=1095,
+                value=730,
+                step=30,
+                key="forecast_history_days",
+            )
+            horizon_days = st.slider(
+                "Forecast horizon, days",
+                min_value=30,
+                max_value=180,
+                value=90,
+                step=15,
+                key="forecast_horizon_days",
+            )
+            weekly_strength = st.slider(
+                "Weekly seasonality",
+                min_value=0.0,
+                max_value=1.5,
+                value=1.0,
+                step=0.05,
+                key="forecast_weekly_strength",
+            )
+            annual_strength = st.slider(
+                "Annual seasonality",
+                min_value=0.0,
+                max_value=0.4,
+                value=float(profile.annual_seasonality_strength),
+                step=0.01,
+                key=f"forecast_annual_strength_{customer_type}",
+            )
+            trend_percent = st.slider(
+                "Monthly trend",
+                min_value=-2.0,
+                max_value=3.0,
+                value=float(profile.monthly_growth_rate * 100),
+                step=0.1,
+                key=f"forecast_monthly_trend_{customer_type}",
+            )
+            noise_percent = st.slider(
+                "Noise level",
+                min_value=1.0,
+                max_value=30.0,
+                value=float(profile.noise_ratio * 100),
+                step=0.5,
+                key=f"forecast_noise_{customer_type}",
+            )
+            event_rate_percent = st.slider(
+                "Abnormal event rate",
+                min_value=0.0,
+                max_value=10.0,
+                value=float(profile.event_rate * 100),
+                step=0.25,
+                key=f"forecast_event_rate_{customer_type}",
+            )
+            random_seed = st.number_input(
+                "Simulation seed",
+                min_value=1,
+                max_value=9999,
+                value=42,
+                step=1,
+                key="forecast_random_seed",
+            )
+
+        history = simulate_daily_waste(
+            customer_type=customer_type,
+            history_days=int(history_days),
+            baseline_tons_per_day=float(baseline),
+            weekly_strength=float(weekly_strength),
+            annual_strength=float(annual_strength),
+            monthly_growth_rate=float(trend_percent) / 100,
+            noise_ratio=float(noise_percent) / 100,
+            event_rate=float(event_rate_percent) / 100,
+            random_seed=int(random_seed),
+        )
+        forecast_result = forecast_daily_waste(history, horizon_days=int(horizon_days))
+
+        with chart_col:
+            st.markdown("**Historical Waste + Forecast**")
+            _render_demand_forecast_chart(history, forecast_result.forecast)
+
+        _render_demand_forecast_summary(forecast_result.summary)
+        _render_demand_decomposition(forecast_result)
+
+
+def _render_demand_forecast_chart(history: pd.DataFrame, forecast: pd.DataFrame) -> None:
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=forecast["date"],
+            y=forecast["lower_95"],
+            mode="lines",
+            line={"width": 0},
+            showlegend=False,
+            hoverinfo="skip",
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=forecast["date"],
+            y=forecast["upper_95"],
+            mode="lines",
+            fill="tonexty",
+            fillcolor="rgba(37, 109, 123, 0.14)",
+            line={"width": 0},
+            name="95% interval",
+            hoverinfo="skip",
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=forecast["date"],
+            y=forecast["lower_80"],
+            mode="lines",
+            line={"width": 0},
+            showlegend=False,
+            hoverinfo="skip",
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=forecast["date"],
+            y=forecast["upper_80"],
+            mode="lines",
+            fill="tonexty",
+            fillcolor="rgba(42, 157, 143, 0.18)",
+            line={"width": 0},
+            name="80% interval",
+            hoverinfo="skip",
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=history["date"],
+            y=history["waste_tons"],
+            mode="lines",
+            name="Historical waste",
+            line={"color": "rgba(148, 163, 184, 0.75)", "width": 1.8},
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=forecast["date"],
+            y=forecast["forecast_mean"],
+            mode="lines",
+            name="Forecast mean",
+            line={"color": "#D1495B", "width": 3},
+        )
+    )
+    fig.add_vline(
+        x=history["date"].max(),
+        line_width=1,
+        line_dash="dot",
+        line_color="rgba(148, 163, 184, 0.55)",
+    )
+    fig.update_layout(
+        height=520,
+        margin={"l": 45, "r": 24, "t": 10, "b": 78},
+        yaxis_title="Tons/day",
+        xaxis_title="Date",
+        legend={"orientation": "h", "y": -0.24, "x": 0.5, "xanchor": "center"},
+        hovermode="x unified",
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+
+def _render_demand_forecast_summary(summary: dict[str, float]) -> None:
+    cols = st.columns(5)
+    metrics = [
+        ("History avg", summary["history_avg_waste_tons"]),
+        ("Forecast avg", summary["forecast_avg_waste_tons"]),
+        ("Forecast peak", summary["forecast_peak_waste_tons"]),
+        ("Planning P80", summary["planning_p80_waste_tons"]),
+        ("Planning P95", summary["planning_p95_waste_tons"]),
+    ]
+    for col, (label, value) in zip(cols, metrics):
+        col.metric(label, _format_tons(value))
+
+
+def _render_demand_decomposition(result: DemandForecastResult) -> None:
+    st.markdown("**Forecast Decomposition**")
+    trend_col, seasonality_col, residual_col = st.columns([0.36, 0.34, 0.30], gap="large")
+    with trend_col:
+        fig = go.Figure()
+        fig.add_trace(
+            go.Scatter(
+                x=result.fitted_history["date"],
+                y=result.fitted_history["trend"],
+                mode="lines",
+                name="Trend",
+                line={"color": "#256D7B", "width": 2.5},
+            )
+        )
+        fig.update_layout(
+            height=280,
+            margin={"l": 38, "r": 14, "t": 8, "b": 42},
+            yaxis_title="Tons/day",
+            showlegend=False,
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+    with seasonality_col:
+        fig = go.Figure()
+        fig.add_trace(
+            go.Bar(
+                x=result.weekly_pattern["day_name"],
+                y=result.weekly_pattern["seasonal_effect"],
+                name="Weekly",
+                marker_color="#5DA399",
+            )
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=result.monthly_pattern["month_name"],
+                y=result.monthly_pattern["seasonal_effect"],
+                mode="lines+markers",
+                name="Monthly",
+                line={"color": "#D1495B", "width": 2},
+                yaxis="y2",
+            )
+        )
+        fig.update_layout(
+            height=280,
+            margin={"l": 38, "r": 38, "t": 8, "b": 42},
+            yaxis={"title": "Weekly"},
+            yaxis2={"title": "Monthly", "overlaying": "y", "side": "right"},
+            legend={"orientation": "h", "y": -0.24, "x": 0.5, "xanchor": "center"},
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+    with residual_col:
+        fig = go.Figure()
+        fig.add_trace(
+            go.Histogram(
+                x=result.fitted_history["residual"],
+                nbinsx=28,
+                name="Residual",
+                marker_color="#B87445",
+            )
+        )
+        fig.update_layout(
+            height=280,
+            margin={"l": 38, "r": 14, "t": 8, "b": 42},
+            xaxis_title="Forecast error, tons/day",
+            yaxis_title="Days",
+            showlegend=False,
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+
+def _format_tons(value: float) -> str:
+    return f"{float(value):,.1f} tons/day"
 def _sidebar_inputs(
     scenarios: pd.DataFrame,
     view_presets: pd.DataFrame,

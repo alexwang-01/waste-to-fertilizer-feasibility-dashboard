@@ -87,10 +87,10 @@ The Streamlit MVP is available in `app.py`.
 
 The app currently includes:
 
-- Dashboard tab for deal setup, diagnostics, Provider report, Customer report, and negotiation what-if analysis
+- Dashboard tab for deal setup, diagnostics, Provider report, Customer report, and negotiation what-if analysis`r`n- Demand Forecast tab for synthetic waste history, forecast intervals, and seasonality decomposition
 - Machine tab for editable machine master assumptions
 - Personnel tab for editable direct and indirect labor assumptions
-- Python model modules in `src/` for reusable calculation logic
+- Python model modules in `src/` for reusable calculation, synthetic demand generation, and forecasting logic
 - Notebooks in `notebooks/` for step-by-step model walkthrough and validation
 
 ## Model Status
