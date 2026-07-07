@@ -233,6 +233,27 @@ div[data-testid="stSelectbox"],
 div[data-testid="stRadio"] {
   margin-bottom: 0.12rem;
 }
+.st-key-active_page div[role="radiogroup"] {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  border-bottom: 1px solid rgba(100, 116, 139, 0.28);
+  padding-bottom: 0.35rem;
+  margin-bottom: 0.95rem;
+}
+.st-key-active_page label {
+  width: auto !important;
+  min-height: 2rem;
+  padding: 0.2rem 0 0.45rem 0;
+  border-bottom: 2px solid transparent;
+}
+.st-key-active_page label:has(input:checked) {
+  color: #ef4444;
+  border-bottom-color: #ef4444;
+}
+.st-key-active_page input[type="radio"] {
+  display: none;
+}
 .st-key-deal_setup_section,
 .st-key-deal_diagnostics_section,
 .st-key-provider_report_section,
@@ -321,9 +342,15 @@ def main() -> None:
     monthly_value_split = result["monthly_value_split"]
     investment_timeline = result["investment_recovery_timeline"]
 
-    dashboard_tab, machine_tab, personnel_tab, demand_tab = st.tabs(["Dashboard", "Machine", "Personnel", "Demand Forecast"])
+    page = st.radio(
+        "Page",
+        ["Dashboard", "Machine", "Personnel", "Demand Forecast"],
+        horizontal=True,
+        label_visibility="collapsed",
+        key="active_page",
+    )
 
-    with dashboard_tab:
+    if page == "Dashboard":
         with st.container(border=True, key="deal_setup_section"):
             _render_deal_setup_summary(
                 deal_summary,
@@ -356,14 +383,11 @@ def main() -> None:
                 )
         with st.container(border=True, key="negotiation_lab_section"):
             _render_negotiation_lab(inputs, view_assumptions, machine, result)
-
-    with machine_tab:
+    elif page == "Machine":
         _render_machine_tab(machine_specs)
-
-    with personnel_tab:
+    elif page == "Personnel":
         _render_personnel_tab(personnel_defaults)
-
-    with demand_tab:
+    else:
         _render_demand_forecast_tab()
 
 
